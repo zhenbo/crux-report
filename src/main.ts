@@ -169,15 +169,18 @@ const formatDate = (date: Date) => {
 const API_KEY = 'AIzaSyC_WmfG1tPj-2AjAY3rqYIx7S4d6KR5Zf0'
 const API_URL = 'https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord'
 const CSV_FILE_NAME = './dist/crux-data.csv'
-const FORM_FACTOR = 'PHONE'
+const FORM_FACTOR = ['PHONE', 'DESKTOP', 'ALL']
 
 // Set the URLs you want to fetch CrUX data for
 const urls: string[] = [
   'https://www.eventbrite.com',
   'https://www.eventbrite.com/signin/signup',
-  'https://www.eventbrite.com/d/ca--san-francisco/events/',
-  'https://www.eventbrite.com/contact/',
-  'https://www.eventbrite.com/c/eater-nyc-food-events-cgrkyrw/',
+  'https://www.eventbrite.com/d/online/all-events/',
+  'https://www.eventbrite.com/l/sell-tickets/',
+  'https://www.eventbrite.com/o/lava-cantina-the-colony-18690227135',
+  'https://www.eventbrite.com/c/music-festival-calendar-cwwhpcd/',
+  'https://www.eventbrite.com/cc/opm-presents-thriving-in-a-hybrid-environment-1849319',
+  'https://www.eventbrite.com/b/ny--new-york/music/',
 ]
 
 // Set the CrUX metrics you want to retrieve
@@ -215,39 +218,45 @@ const csvWriterInstance = createObjectCsvWriter({
 async function fetchCrUXData(): Promise<void> {
   // Loop through each URL and fetch CrUX data
   for (let i = 0; i < urls.length; i++) {
-    try {
-      // Construct the API request
-      const requestBody = {
-        formFactor: FORM_FACTOR,
-        url: urls[i],
-        metrics: cruxMetrics,
-      }
+    for (const form_factor in FORM_FACTOR) {
+      try {
+        // Construct the API request
+        const requestBody = {
+          form_factor: form_factor,
+          url: urls[i],
+          metrics: cruxMetrics,
+        }
+        // Pulling data combined across desktop, tablet and phone
+        if (form_factor == 'ALL') {
+          requestBody.form_factor = ''
+        }
 
-      // Construct headers and plug in API key
-      const requestConfig: AxiosRequestConfig = {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        params: {
-          key: API_KEY,
-        },
-      }
+        // Construct headers and plug in API key
+        const requestConfig: AxiosRequestConfig = {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          params: {
+            key: API_KEY,
+          },
+        }
 
-      // Make the API request
-      const response = await axios.post(API_URL, requestBody, requestConfig)
-      const cruxApiResponse: CrUXApiResponse = response.data
-      const csvRecords = generateCsvRecord(cruxApiResponse)
-      // Write the data to the CSV file
-      await csvWriterInstance.writeRecords(csvRecords)
-      console.log(`Data fetched and written to CSV for URL: ${urls[i]}`)
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.log(`Error fetching data for URL: ${urls[i]} - ${error.message}`)
+        // Make the API request
+        const response = await axios.post(API_URL, requestBody, requestConfig)
+        const cruxApiResponse: CrUXApiResponse = response.data
+        const csvRecords = generateCsvRecord(cruxApiResponse)
+        // Write the data to the CSV file
+        await csvWriterInstance.writeRecords(csvRecords)
+        console.log(`Data fetched and written to CSV for URL: ${urls[i]}`)
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.log(`Error fetching data for URL: ${urls[i]} - ${error.message}`)
+        }
       }
+      // Delay for the rate limit before fetching data for the next URL
+      await new Promise(resolve => setTimeout(resolve, 60000 / 100)) // 60000 ms = 1 minute
     }
-    // Delay for the rate limit before fetching data for the next URL
-    await new Promise(resolve => setTimeout(resolve, 60000 / 100)) // 60000 ms = 1 minute
   }
 }
 
