@@ -13,8 +13,8 @@ export type CrUXApiResponse = {
     metrics: {
       [key: string]: {
         histogramTimeseries: Array<{
-          start: string
-          end: string
+          start: number
+          end?: number
           densities: number[]
         }>
         percentilesTimeseries: {
