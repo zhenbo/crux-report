@@ -74,7 +74,7 @@ const response: CrUXApiResponse = {
   },
   urlNormalizationDetails: {
     originalUrl: 'https://developer.chrome.com/docs/',
-    normalizedUrl: 'https://developer.chrome.com/docs/cle',
+    normalizedUrl: 'https://developer.chrome.com/docs/',
   },
 }
 
