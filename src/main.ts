@@ -1,72 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import { createObjectCsvWriter } from 'csv-writer'
-
-type ReportDate = {
-  year: number
-  month: number
-  day: number
-}
-
-type CrUXApiResponse = {
-  record: {
-    key: {
-      url: string
-      formFactor: string
-    }
-    metrics: {
-      [key: string]: {
-        histogramTimeseries: Array<{
-          start: string
-          end: string
-          densities: number[]
-        }>
-        percentilesTimeseries: {
-          p75s: number[]
-        }
-      }
-    }
-    collectionPeriods: Array<{
-      firstDate: ReportDate
-      lastDate: ReportDate
-    }>
-  }
-  urlNormalizationDetails: {
-    originalUrl: string
-    normalizedUrl: string
-  }
-}
-
-type Thresholds = {
-  [key: string]: [number, number]
-}
-
-type CrUXDataFrame = {
-  first_date: Date[]
-  last_date: Date[]
-  p75: number[]
-  good: number[]
-  needs_improvement: number[]
-  poor: number[]
-  url: string
-  metric_short_name: string
-  form_factor: string
-  high_threshold: number
-  low_threshold: number
-}
-
-type CrUXDataItemFrame = {
-  first_date: string
-  last_date: string
-  p75: number
-  good: number
-  needs_improvement: number
-  poor: number
-  url: string
-  metric_short_name: string
-  form_factor: string
-  high_threshold: number
-  low_threshold: number
-}
+import { CrUXApiResponse, CrUXDataFrame, CrUXDataItemFrame, ReportDate, Thresholds } from './main.types'
 
 function metricsIn(response: CrUXApiResponse): string[] {
   const metrics = Object.keys(response.record.metrics)
@@ -74,7 +8,7 @@ function metricsIn(response: CrUXApiResponse): string[] {
   return metrics
 }
 
-function thresholdsByMetric(response: CrUXApiResponse): Thresholds {
+export function thresholdsByMetric(response: CrUXApiResponse): Thresholds {
   const result: Thresholds = {}
   const metrics = response.record.metrics
 
@@ -85,7 +19,7 @@ function thresholdsByMetric(response: CrUXApiResponse): Thresholds {
   return result
 }
 
-function timestamp(dateObj: { year: number; month: number; day: number }): Date {
+function timestamp(dateObj: ReportDate): Date {
   return new Date(dateObj.year, dateObj.month - 1, dateObj.day)
 }
 
@@ -145,7 +79,7 @@ function convertToCsvDataRecord(cruxDataFrame: CrUXDataFrame): CrUXDataItemFrame
   return result
 }
 
-function generateCsvRecord(cruxApiResponse: CrUXApiResponse): CrUXDataItemFrame[] {
+export function generateCsvRecord(cruxApiResponse: CrUXApiResponse): CrUXDataItemFrame[] {
   const result = []
   const thresholds = thresholdsByMetric(cruxApiResponse)
   for (const metric of metricsIn(cruxApiResponse)) {
@@ -215,7 +149,7 @@ const csvWriterInstance = createObjectCsvWriter({
 })
 
 // Function to fetch CrUX data and write to CSV
-async function fetchCrUXData(): Promise<void> {
+export async function fetchCrUXData(urls: string[], timeout: number): Promise<void> {
   // Loop through each URL and fetch CrUX data
   for (let i = 0; i < urls.length; i++) {
     for (const form_factor in FORM_FACTOR) {
@@ -255,10 +189,10 @@ async function fetchCrUXData(): Promise<void> {
         }
       }
       // Delay for the rate limit before fetching data for the next URL
-      await new Promise(resolve => setTimeout(resolve, 60000 / 100)) // 60000 ms = 1 minute
+      await new Promise(resolve => setTimeout(resolve, 60000 / timeout)) // 60000 ms = 1 minute
     }
   }
 }
 
 // Start fetching CrUX data
-fetchCrUXData()
+fetchCrUXData(urls, 100)
