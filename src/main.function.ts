@@ -31,7 +31,7 @@ export function shortName(metric: string): string {
   return short !== 'ITNP' ? short : 'INP'
 }
 
-export function dataframeFor(
+function dataframeFor(
   metric: string,
   response: CrUXApiResponse,
   high_threshold: number,
@@ -55,7 +55,7 @@ export function dataframeFor(
   return cols
 }
 
-export function convertToCsvDataRecord(cruxDataFrame: CrUXDataFrame): CrUXDataItemFrame[] {
+function convertToCsvDataRecord(cruxDataFrame: CrUXDataFrame): CrUXDataItemFrame[] {
   const result = []
   const numberOfRecords = cruxDataFrame.first_date.length
   for (let i = 0; i < numberOfRecords; i++) {

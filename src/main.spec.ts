@@ -1,4 +1,4 @@
-import { generateCsvRecord, thresholdsByMetric } from './main.function'
+import { metricsIn, generateCsvRecord, thresholdsByMetric, timestamp, shortName, formatDate } from './main.function'
 import { CrUXApiResponse } from './main.types'
 
 const response: CrUXApiResponse = {
@@ -106,5 +106,72 @@ describe('generateCsvRecord', () => {
       },
     ]
     expect(generateCsvRecord(response)[0]).toEqual(expected[0])
+  })
+})
+
+describe('metricsIn', () => {
+  it('should return a sorted list of metric names', () => {
+    const expectedMetrics = ['first_input_delay', 'largest_contentful_paint']
+    const actualMetrics = metricsIn(response)
+    expect(actualMetrics).toEqual(expectedMetrics)
+  })
+})
+
+describe('timestamp', () => {
+  it('should return a Date object with the correct year, month, and day', () => {
+    const dateObj = {
+      year: 2022,
+      month: 5,
+      day: 12,
+    }
+    const expectedDate = new Date(dateObj.year, dateObj.month - 1, dateObj.day)
+    const actualDate = timestamp(dateObj)
+    expect(actualDate).toEqual(expectedDate)
+  })
+})
+
+describe('shortName', () => {
+  it('should return the correct short name for a metric', () => {
+    const metric = 'largest_contentful_paint'
+    const expectedShortName = 'LCP'
+    const actualShortName = shortName(metric)
+    expect(actualShortName).toEqual(expectedShortName)
+  })
+
+  it('should return "INP" for the "experimental_interaction_to_next_paint', () => {
+    const metric = 'experimental_interaction_to_next_paint'
+    const expectedShortName = 'INP'
+    const actualShortName = shortName(metric)
+    expect(actualShortName).toEqual(expectedShortName)
+  })
+
+  it('should return "FID" for "first_input_delay_experimental"', () => {
+    const metric = 'first_input_delay_experimental'
+    const expectedShortName = 'FID'
+    const actualShortName = shortName(metric)
+    expect(actualShortName).toEqual(expectedShortName)
+  })
+
+  it('should return "FCP" for "first_contentful_paint"', () => {
+    const metric = 'first_contentful_paint'
+    const expectedShortName = 'FCP'
+    const actualShortName = shortName(metric)
+    expect(actualShortName).toEqual(expectedShortName)
+  })
+})
+
+describe('formatDate', () => {
+  it('should format a date as "YYYY-MM-DD"', () => {
+    const date = new Date('2020-04-13T00:00:00.000-05:00')
+    const expectedFormattedDate = '2020-04-13'
+    const actualFormattedDate = formatDate(date)
+    expect(actualFormattedDate).toEqual(expectedFormattedDate)
+  })
+
+  it('should pad single-digit months and days with leading zeroes', () => {
+    const date = new Date('2022-03-04T00:00:00.000-05:00')
+    const expectedFormattedDate = '2022-03-04'
+    const actualFormattedDate = formatDate(date)
+    expect(actualFormattedDate).toEqual(expectedFormattedDate)
   })
 })

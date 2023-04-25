@@ -11,13 +11,13 @@ const FORM_FACTOR = ['PHONE', 'DESKTOP', 'ALL']
 // Set the URLs you want to fetch CrUX data for
 const urls: string[] = [
   'https://www.eventbrite.com',
-  // 'https://www.eventbrite.com/signin/signup',
-  // 'https://www.eventbrite.com/d/online/all-events/',
-  // 'https://www.eventbrite.com/l/sell-tickets/',
-  // 'https://www.eventbrite.com/o/lava-cantina-the-colony-18690227135',
-  // 'https://www.eventbrite.com/c/music-festival-calendar-cwwhpcd/',
-  // 'https://www.eventbrite.com/cc/opm-presents-thriving-in-a-hybrid-environment-1849319',
-  // 'https://www.eventbrite.com/b/ny--new-york/music/',
+  'https://www.eventbrite.com/signin/signup',
+  'https://www.eventbrite.com/d/online/all-events/',
+  'https://www.eventbrite.com/l/sell-tickets/',
+  'https://www.eventbrite.com/o/lava-cantina-the-colony-18690227135',
+  'https://www.eventbrite.com/c/music-festival-calendar-cwwhpcd/',
+  'https://www.eventbrite.com/cc/opm-presents-thriving-in-a-hybrid-environment-1849319',
+  'https://www.eventbrite.com/b/ny--new-york/music/',
 ]
 
 // Set the CrUX metrics you want to retrieve
