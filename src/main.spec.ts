@@ -10,19 +10,27 @@ const response: CrUXApiResponse = {
     metrics: {
       largest_contentful_paint: {
         histogramTimeseries: [
-          { start: 0, end: 2500, densities: [0, 0.5, 0.25, 0.25] },
-          { start: 2500, end: 4000, densities: [0, 0.5, 0.25, 0.25] },
-          { start: 4000, densities: [0, 0.5, 0.25, 0.25] },
+          { start: 0, end: 2500, densities: [0.661468505859375, 0.65692138671875, 0.6688232421875, 0.645263671875] },
+          {
+            start: 2500,
+            end: 4000,
+            densities: [0.13287353515625, 0.136505126953125, 0.13336181640625, 0.148345947265625],
+          },
+          { start: 4000, densities: [0.205657958984375, 0.206573486328125, 0.19781494140625, 0.206390380859375] },
         ],
-        percentilesTimeseries: { p75s: [1000, 1500, 1750, 1800] },
+        percentilesTimeseries: { p75s: [3638, 3600, 3505, 3654] },
       },
       first_input_delay: {
         histogramTimeseries: [
-          { start: 0, end: 100, densities: [0.1, 0.4, 0.4, 0.1] },
-          { start: 100, end: 300, densities: [0.1, 0.4, 0.4, 0.1] },
-          { start: 300, densities: [0.1, 0.4, 0.4, 0.1] },
+          { start: 0, end: 100, densities: [0.82470703125, 0.834320068359375, 0.836761474609375, 0.835052490234375] },
+          {
+            start: 100,
+            end: 300,
+            densities: [0.090240478515625, 0.089752197265625, 0.092864990234375, 0.10198974609375],
+          },
+          { start: 300, densities: [0.085052490234375, 0.075927734375, 0.07037353515625, 0.062957763671875] },
         ],
-        percentilesTimeseries: { p75s: [50, 80, 90, 95] },
+        percentilesTimeseries: { p75s: [32, 31, 31, 30] },
       },
     },
     collectionPeriods: [
@@ -86,10 +94,10 @@ describe('generateCsvRecord', () => {
       {
         first_date: '2022-12-18',
         last_date: '2023-01-14',
-        p75: 50,
-        good: 0.1,
-        needs_improvement: 0.1,
-        poor: 0.1,
+        p75: 32,
+        good: 0.82470703125,
+        needs_improvement: 0.090240478515625,
+        poor: 0.085052490234375,
         url: 'https://developer.chrome.com/docs/',
         metric_short_name: 'FID',
         form_factor: 'PHONE',
