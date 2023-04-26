@@ -64,3 +64,10 @@ export type CrUXDataItemFrame = {
   high_threshold: number
   low_threshold: number
 }
+
+export type CrUXApiRequestParam = {
+  urls: string[]
+  metrics: string[]
+  form_factor: string[]
+  rate_limit: number
+}

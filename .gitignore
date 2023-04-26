@@ -116,3 +116,6 @@ dist
 .vscode/
 tools/dev
 .DS_Store
+
+#API Key enviroment file
+.env

@@ -1,27 +1,30 @@
 import axios, { AxiosRequestConfig } from 'axios'
 import { createObjectCsvWriter } from 'csv-writer'
-import { CrUXApiResponse } from './main.types'
+import { CsvWriter } from 'csv-writer/src/lib/csv-writer'
+import { CrUXApiResponse, CrUXApiRequestParam, CrUXDataItemFrame } from './main.types'
 import { generateCsvRecord } from './main.function'
+import config from './config'
 
-const API_KEY = 'AIzaSyC_WmfG1tPj-2AjAY3rqYIx7S4d6KR5Zf0'
+const API_KEY = config.apiKey
 const API_URL = 'https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord'
 const CSV_FILE_NAME = './dist/crux-data.csv'
 const FORM_FACTOR = ['PHONE', 'DESKTOP', 'ALL']
+const RATE_LIMIT = 100
 
 // Set the URLs you want to fetch CrUX data for
-const urls: string[] = [
+const URLs: string[] = [
   'https://www.eventbrite.com',
-  'https://www.eventbrite.com/signin/signup',
-  'https://www.eventbrite.com/d/online/all-events/',
-  'https://www.eventbrite.com/l/sell-tickets/',
-  'https://www.eventbrite.com/o/lava-cantina-the-colony-18690227135',
-  'https://www.eventbrite.com/c/music-festival-calendar-cwwhpcd/',
-  'https://www.eventbrite.com/cc/opm-presents-thriving-in-a-hybrid-environment-1849319',
-  'https://www.eventbrite.com/b/ny--new-york/music/',
+  // 'https://www.eventbrite.com/signin/signup',
+  // 'https://www.eventbrite.com/d/online/all-events/',
+  // 'https://www.eventbrite.com/l/sell-tickets/',
+  // 'https://www.eventbrite.com/o/lava-cantina-the-colony-18690227135',
+  // 'https://www.eventbrite.com/c/music-festival-calendar-cwwhpcd/',
+  // 'https://www.eventbrite.com/cc/opm-presents-thriving-in-a-hybrid-environment-1849319',
+  // 'https://www.eventbrite.com/b/ny--new-york/music/',
 ]
 
 // Set the CrUX metrics you want to retrieve
-const cruxMetrics: string[] = [
+const CRUX_METRICS: string[] = [
   'largest_contentful_paint',
   'first_input_delay',
   'cumulative_layout_shift',
@@ -52,16 +55,19 @@ const csvWriterInstance = createObjectCsvWriter({
 })
 
 // Function to fetch CrUX data and write to CSV
-async function fetchCrUXData(urls: string[], timeout: number): Promise<void> {
+export async function fetchCrUXData(
+  requestParam: CrUXApiRequestParam,
+  csvWriterInstance: CsvWriter<CrUXDataItemFrame>,
+): Promise<void> {
   // Loop through each URL and fetch CrUX data
-  for (let i = 0; i < urls.length; i++) {
+  for (let i = 0; i < requestParam.urls.length; i++) {
     for (const form_factor in FORM_FACTOR) {
       try {
         // Construct the API request
         const requestBody = {
           form_factor: form_factor,
-          url: urls[i],
-          metrics: cruxMetrics,
+          url: requestParam.urls[i],
+          metrics: requestParam.metrics,
         }
         // Pulling data combined across desktop, tablet and phone
         if (form_factor == 'ALL') {
@@ -85,17 +91,23 @@ async function fetchCrUXData(urls: string[], timeout: number): Promise<void> {
         const csvRecords = generateCsvRecord(cruxApiResponse)
         // Write the data to the CSV file
         await csvWriterInstance.writeRecords(csvRecords)
-        console.log(`Data fetched and written to CSV for URL: ${urls[i]}`)
+        console.log(`Data fetched and written to CSV for URL: ${requestParam.urls[i]}`)
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.log(`Error fetching data for URL: ${urls[i]} - ${error.message}`)
+          console.log(`Error fetching data for URL: ${requestParam.urls[i]} - ${error.message}`)
         }
       }
       // Delay for the rate limit before fetching data for the next URL
-      await new Promise(resolve => setTimeout(resolve, 60000 / timeout)) // 60000 ms = 1 minute
+      await new Promise(resolve => setTimeout(resolve, 60000 / requestParam.rate_limit)) // 60000 ms = 1 minute
     }
   }
 }
 
 // Start fetching CrUX data
-fetchCrUXData(urls, 100)
+const requestParam: CrUXApiRequestParam = {
+  metrics: CRUX_METRICS,
+  form_factor: FORM_FACTOR,
+  urls: URLs,
+  rate_limit: RATE_LIMIT, // 100 requests/min
+}
+fetchCrUXData(requestParam, csvWriterInstance)
