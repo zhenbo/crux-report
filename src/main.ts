@@ -9,12 +9,12 @@ import readCsv from './csv.utils'
 const API_KEY = config.apiKey
 const API_URL = 'https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord'
 const OUTPUT_CSV_FILE_PATH = './data/crux-data.csv'
-const INPUT_CSV_FILE_PATH = './data/input.sample'
+const INPUT_CSV_FILE_PATH = './data/input.csv'
 const FORM_FACTOR = ['PHONE', 'DESKTOP', 'ALL']
 const RATE_LIMIT = 100
 
-// Set the URLs you want to fetch CrUX data for
-const URLs: string[] = await readCsv(INPUT_CSV_FILE_PATH)
+// Set the SAMPLE_URLS you want to fetch CrUX data for
+const SAMPLE_URLS: string[] = await readCsv(INPUT_CSV_FILE_PATH)
 
 // Set the CrUX metrics you want to retrieve
 const CRUX_METRICS: string[] = [
@@ -100,7 +100,7 @@ export async function fetchCrUXData(
 const requestParam: CrUXApiRequestParam = {
   metrics: CRUX_METRICS,
   form_factor: FORM_FACTOR,
-  urls: URLs,
+  urls: SAMPLE_URLS,
   rate_limit: RATE_LIMIT, // 100 requests/min
 }
 fetchCrUXData(requestParam, csvWriterInstance)
