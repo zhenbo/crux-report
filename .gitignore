@@ -119,3 +119,6 @@ tools/dev
 
 #API Key enviroment file
 .env
+
+# data directory for output and input
+data/*.csv
