@@ -4,4 +4,4 @@ This tool pull Core Web Vital data from CrUX history API
 
 ## Getting Started
 
-To Run this tool use yarn start:dev
+To run this tool use `yarn start:dev`
