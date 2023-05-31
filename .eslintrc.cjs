@@ -8,12 +8,16 @@ module.exports = {
     node: true,
   },
   rules: {
-    'no-console': 'error',
+    'no-console': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-dupe-class-members': ['error'],
     '@typescript-eslint/no-useless-constructor': ['error'],
     '@typescript-eslint/no-inferrable-types': ['off'],
 
-    'import/extensions': ['error', 'ignorePackages', { js: 'always', jsx: 'never', ts: 'never', tsx: 'never' }],
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      { js: 'always', jsx: 'never', ts: 'never', tsx: 'never', '': 'never' },
+    ],
   },
 }
