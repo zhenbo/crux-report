@@ -27,7 +27,6 @@
     "composite": true,
     "skipLibCheck": true,
     "noEmitHelpers": false,
-
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "."

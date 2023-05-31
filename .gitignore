@@ -115,3 +115,10 @@ dist
 .idea/
 .vscode/
 tools/dev
+.DS_Store
+
+#API Key enviroment file
+.env
+
+# data directory for output and input
+data/*.csv
