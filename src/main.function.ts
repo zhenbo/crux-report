@@ -56,10 +56,10 @@ function dataframeFor(
 }
 
 function convertToCsvDataRecord(cruxDataFrame: CrUXDataFrame): CrUXDataItemFrame[] {
-  const result = []
+  const result = new Array<CrUXDataItemFrame>()
   const numberOfRecords = cruxDataFrame.first_date.length
   for (let i = 0; i < numberOfRecords; i++) {
-    const cruxDataItem = {
+    const cruxDataItem: CrUXDataItemFrame = {
       first_date: formatDate(cruxDataFrame.first_date[i]),
       last_date: formatDate(cruxDataFrame.last_date[i]),
       p75: cruxDataFrame.p75[i],
@@ -85,7 +85,7 @@ export function formatDate(date: Date) {
 }
 
 export function generateCsvRecord(cruxApiResponse: CrUXApiResponse): CrUXDataItemFrame[] {
-  const result = []
+  const result = new Array<CrUXDataItemFrame>()
   const thresholds = thresholdsByMetric(cruxApiResponse)
   for (const metric of metricsIn(cruxApiResponse)) {
     const [loThreshold, hiThreshold] = thresholds[metric]

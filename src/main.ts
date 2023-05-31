@@ -51,6 +51,8 @@ const csvWriterInstance = createObjectCsvWriter({
 export async function fetchCrUXData(
   requestParam: CrUXApiRequestParam,
   csvWriterInstance: CsvWriter<CrUXDataItemFrame>,
+  // startDate?: ReportDate,
+  // endDate?: ReportDate
 ): Promise<void> {
   // Loop through each URL and fetch CrUX data
   for (let i = 0; i < requestParam.urls.length; i++) {
