@@ -97,3 +97,21 @@ export function generateCsvRecord(cruxApiResponse: CrUXApiResponse): CrUXDataIte
   }
   return result
 }
+
+export function getClosetSundayInPast(d: Date): Date {
+  const currentDay = d.getDay() // 0 for Sunday, 1 for Monday, and so on...
+  // Calculate the number of days to subtract from the current day to get to the closest Monday
+  const daysToSubtract = currentDay % 7
+  // Subtract the number of days to get to the closest Sunday
+  d.setDate(d.getDate() - daysToSubtract)
+  return d
+}
+
+export function filterRecordsByDateRange(records: CrUXDataItemFrame[], startDate: Date, endDate: Date) {
+  const cutOffFirstDate = startDate.toISOString().slice(0, 10)
+  const cutOffLastDate = endDate.toISOString().slice(0, 10)
+  const filteredRecords = records.filter(
+    record => record.first_date >= cutOffFirstDate && record.first_date <= cutOffLastDate,
+  )
+  return filteredRecords
+}

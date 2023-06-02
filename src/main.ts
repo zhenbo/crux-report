@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { createObjectCsvWriter } from 'csv-writer'
 import { CsvWriter } from 'csv-writer/src/lib/csv-writer'
 import { CrUXApiResponse, CrUXApiRequestParam, CrUXDataItemFrame } from './main.types'
-import { generateCsvRecord } from './main.function'
+import { generateCsvRecord, getClosetSundayInPast, filterRecordsByDateRange } from './main.function'
 import config from './config'
 import readCsv from './csv.utils'
 
@@ -51,8 +51,8 @@ const csvWriterInstance = createObjectCsvWriter({
 export async function fetchCrUXData(
   requestParam: CrUXApiRequestParam,
   csvWriterInstance: CsvWriter<CrUXDataItemFrame>,
-  // startDate?: ReportDate,
-  // endDate?: ReportDate
+  startDate?: Date,
+  endDate?: Date,
 ): Promise<void> {
   // Loop through each URL and fetch CrUX data
   for (let i = 0; i < requestParam.urls.length; i++) {
@@ -83,7 +83,20 @@ export async function fetchCrUXData(
         // Make the API request
         const response = await axios.post(API_URL, requestBody, requestConfig)
         const cruxApiResponse: CrUXApiResponse = response.data
-        const csvRecords = generateCsvRecord(cruxApiResponse)
+        let csvRecords = generateCsvRecord(cruxApiResponse)
+        let lastDate = new Date()
+        if (startDate) {
+          const firstDate = getClosetSundayInPast(startDate)
+          if (endDate === undefined) {
+            // When last date is not set, set it to current date
+            lastDate = getClosetSundayInPast(new Date())
+          } else {
+            // Otherwise get the closet Sunday of the end date
+            lastDate = getClosetSundayInPast(endDate)
+          }
+          csvRecords = filterRecordsByDateRange(csvRecords, firstDate, lastDate)
+        }
+
         // Write the data to the CSV file
         await csvWriterInstance.writeRecords(csvRecords)
         console.log(`Data fetched and written to CSV for URL: ${requestParam.urls[i]}`)
@@ -105,4 +118,7 @@ const requestParam: CrUXApiRequestParam = {
   urls: SAMPLE_URLS,
   rate_limit: RATE_LIMIT, // 100 requests/min
 }
-fetchCrUXData(requestParam, csvWriterInstance)
+//fetchCrUXData(requestParam, csvWriterInstance)
+const startDate = new Date('2023-04-23T00:00:00.000-04:00')
+const endDate = new Date('2023-06-02T00:00:00.000-04:00')
+fetchCrUXData(requestParam, csvWriterInstance, startDate, endDate)
