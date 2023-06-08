@@ -119,6 +119,6 @@ const requestParam: CrUXApiRequestParam = {
   rate_limit: RATE_LIMIT, // 100 requests/min
 }
 //fetchCrUXData(requestParam, csvWriterInstance)
-const startDate = new Date('2023-04-23T00:00:00.000-04:00')
-const endDate = new Date('2023-06-02T00:00:00.000-04:00')
+const startDate = new Date('2023-05-07T00:00:00.000-04:00')
+const endDate = new Date('2023-06-03T00:00:00.000-04:00')
 fetchCrUXData(requestParam, csvWriterInstance, startDate, endDate)
