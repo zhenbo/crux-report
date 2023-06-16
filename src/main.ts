@@ -1,11 +1,42 @@
-import axios, { AxiosRequestConfig } from 'axios'
 import { createObjectCsvWriter } from 'csv-writer'
-import { CsvWriter } from 'csv-writer/src/lib/csv-writer'
-import { CrUXApiResponse, CrUXApiRequestParam, CrUXDataItemFrame } from './main.types'
-import { generateCsvRecord } from './main.function'
+import { CrUXApiRequestParam } from './main.types'
+import { fetchCrUXData } from './main.function'
 import config from './config'
 import readCsv from './csv.utils'
+import yargs from 'yargs'
+import moment from 'moment'
 
+// Get the range for first date
+const dateFormat = 'YYYY-MM-DDTHH:mm:ssZ'
+const parser = yargs(process.argv.slice(2)).options({
+  lowFirstDate: {
+    alias: 'low',
+    type: 'string',
+    description:
+      'this is lower end of first date where the data point is collected, it starts at Sunday, example: 2023-04-30T00:00:00.000-04:00',
+    required: true,
+    coerce: (arg: string) => {
+      if (!moment(arg, dateFormat, true).isValid()) {
+        throw new Error('Invalid lower end first date. Correct format is ' + dateFormat)
+      }
+      return arg
+    },
+  },
+  highFirstDate: {
+    alias: 'high',
+    type: 'string',
+    description:
+      'this is higher end first date where the data point is collected, it starts at Sunday example: 2023-04-30T00:00:00.000-04:00',
+    required: true,
+    coerce: (arg: string) => {
+      if (!moment(arg, dateFormat, true).isValid()) {
+        throw new Error('Invalid higher end first date. Correct format is ' + dateFormat)
+      }
+      return arg
+    },
+  },
+})
+const argv = await parser.argv
 const API_KEY = config.apiKey
 const API_URL = 'https://chromeuxreport.googleapis.com/v1/records:queryHistoryRecord'
 const OUTPUT_CSV_FILE_PATH = './data/crux-data.csv'
@@ -47,60 +78,16 @@ const csvWriterInstance = createObjectCsvWriter({
   header: csvHeaders,
 })
 
-// Function to fetch CrUX data and write to CSV
-export async function fetchCrUXData(
-  requestParam: CrUXApiRequestParam,
-  csvWriterInstance: CsvWriter<CrUXDataItemFrame>,
-): Promise<void> {
-  // Loop through each URL and fetch CrUX data
-  for (let i = 0; i < requestParam.urls.length; i++) {
-    for (const form_factor in FORM_FACTOR) {
-      try {
-        // Construct the API request
-        const requestBody = {
-          form_factor: form_factor,
-          url: requestParam.urls[i],
-          metrics: requestParam.metrics,
-        }
-        // Pulling data combined across desktop, tablet and phone
-        if (form_factor == 'ALL') {
-          requestBody.form_factor = ''
-        }
-
-        // Construct headers and plug in API key
-        const requestConfig: AxiosRequestConfig = {
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          params: {
-            key: API_KEY,
-          },
-        }
-
-        // Make the API request
-        const response = await axios.post(API_URL, requestBody, requestConfig)
-        const cruxApiResponse: CrUXApiResponse = response.data
-        const csvRecords = generateCsvRecord(cruxApiResponse)
-        // Write the data to the CSV file
-        await csvWriterInstance.writeRecords(csvRecords)
-        console.log(`Data fetched and written to CSV for URL: ${requestParam.urls[i]}`)
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.log(`Error fetching data for URL: ${requestParam.urls[i]} - ${error.message}`)
-        }
-      }
-      // Delay for the rate limit before fetching data for the next URL
-      await new Promise(resolve => setTimeout(resolve, 60000 / requestParam.rate_limit)) // 60000 ms = 1 minute
-    }
-  }
-}
-
 // Start fetching CrUX data
 const requestParam: CrUXApiRequestParam = {
+  api_key: API_KEY,
+  api_url: API_URL,
   metrics: CRUX_METRICS,
   form_factor: FORM_FACTOR,
   urls: SAMPLE_URLS,
   rate_limit: RATE_LIMIT, // 100 requests/min
 }
-fetchCrUXData(requestParam, csvWriterInstance)
+
+const thresholdLow = new Date(argv.lowFirstDate)
+const thresholdHigh = new Date(argv.highFirstDate)
+fetchCrUXData(requestParam, csvWriterInstance, thresholdLow, thresholdHigh)

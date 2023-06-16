@@ -70,4 +70,6 @@ export type CrUXApiRequestParam = {
   metrics: string[]
   form_factor: string[]
   rate_limit: number
+  api_key: string
+  api_url: string
 }

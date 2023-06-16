@@ -1,8 +1,8 @@
-# NodeJS Starter Project
+# CrUX Historical Data
 
-Project bootstrapped using [NodeJS Starter ToolKit](https://github.com/vitorsalgado/create-nodejs-ts).  
-Visit the repository for more details.
+This tool pull Core Web Vital data from CrUX history API
 
 ## Getting Started
 
-Review the generated code, and it's recommended to run a `npm init` to adjust basic project configurations before start.
+To run this tool use `yarn start:dev -low {first date low threshold} -high {first date high threshold}`
+example command `yarn start:dev --low 2023-04-30T00:00:00-04:00 --high 2023-05-07T00:00:00-04:00`
