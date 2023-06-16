@@ -1,4 +1,12 @@
-import { metricsIn, generateCsvRecord, thresholdsByMetric, timestamp, shortName, formatDate } from './main.function'
+import {
+  metricsIn,
+  generateCsvRecord,
+  thresholdsByMetric,
+  timestamp,
+  shortName,
+  formatDate,
+  getClosetSundayInPast,
+} from './main.function'
 import { CrUXApiResponse } from './main.types'
 
 const response: CrUXApiResponse = {
@@ -173,5 +181,18 @@ describe('formatDate', () => {
     const expectedFormattedDate = '2022-03-04'
     const actualFormattedDate = formatDate(date)
     expect(actualFormattedDate).toEqual(expectedFormattedDate)
+  })
+})
+
+describe('getClosetMondayInPast', () => {
+  test('should return the correct date of the most recent Monday', () => {
+    // Mock the current date as a specific date (e.g., May 30, 2023, which is a Tuesday)
+    const inputDate = new Date('2023-04-19T00:00:00.000-04:00')
+    const expectedDate = new Date('2023-04-16T00:00:00.000-04:00') // The most recent Monday before May 30, 2023 is May 29, 2023
+    // Call the getCurrentMonday function
+    const result = getClosetSundayInPast(inputDate)
+
+    // Assert that the result matches the expected date
+    expect(result).toEqual(expectedDate)
   })
 })

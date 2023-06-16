@@ -1,4 +1,13 @@
-import { CrUXApiResponse, CrUXDataFrame, CrUXDataItemFrame, ReportDate, Thresholds } from './main.types'
+import {
+  CrUXApiRequestParam,
+  CrUXApiResponse,
+  CrUXDataFrame,
+  CrUXDataItemFrame,
+  ReportDate,
+  Thresholds,
+} from './main.types'
+import axios, { AxiosRequestConfig } from 'axios'
+import { CsvWriter } from 'csv-writer/src/lib/csv-writer'
 
 export function metricsIn(response: CrUXApiResponse): string[] {
   const metrics = Object.keys(response.record.metrics)
@@ -56,10 +65,10 @@ function dataframeFor(
 }
 
 function convertToCsvDataRecord(cruxDataFrame: CrUXDataFrame): CrUXDataItemFrame[] {
-  const result = []
+  const result = new Array<CrUXDataItemFrame>()
   const numberOfRecords = cruxDataFrame.first_date.length
   for (let i = 0; i < numberOfRecords; i++) {
-    const cruxDataItem = {
+    const cruxDataItem: CrUXDataItemFrame = {
       first_date: formatDate(cruxDataFrame.first_date[i]),
       last_date: formatDate(cruxDataFrame.last_date[i]),
       p75: cruxDataFrame.p75[i],
@@ -85,7 +94,7 @@ export function formatDate(date: Date) {
 }
 
 export function generateCsvRecord(cruxApiResponse: CrUXApiResponse): CrUXDataItemFrame[] {
-  const result = []
+  const result = new Array<CrUXDataItemFrame>()
   const thresholds = thresholdsByMetric(cruxApiResponse)
   for (const metric of metricsIn(cruxApiResponse)) {
     const [loThreshold, hiThreshold] = thresholds[metric]
@@ -96,4 +105,86 @@ export function generateCsvRecord(cruxApiResponse: CrUXApiResponse): CrUXDataIte
     }
   }
   return result
+}
+
+export function getClosetSundayInPast(d: Date): Date {
+  const currentDay = d.getDay() // 0 for Sunday, 1 for Monday, and so on...
+  // Calculate the number of days to subtract from the current day to get to the closest Monday
+  const daysToSubtract = currentDay % 7
+  // Subtract the number of days to get to the closest Sunday
+  d.setDate(d.getDate() - daysToSubtract)
+  return d
+}
+
+export function filterRecordsByDateRange(records: CrUXDataItemFrame[], startDate: Date, endDate: Date) {
+  const cutOffFirstDate = startDate.toISOString().slice(0, 10)
+  const cutOffLastDate = endDate.toISOString().slice(0, 10)
+  const filteredRecords = records.filter(
+    record => record.first_date >= cutOffFirstDate && record.first_date <= cutOffLastDate,
+  )
+  return filteredRecords
+}
+
+// Function to fetch CrUX data and write to CSV
+export async function fetchCrUXData(
+  requestParam: CrUXApiRequestParam,
+  csvWriterInstance: CsvWriter<CrUXDataItemFrame>,
+  startDate?: Date,
+  endDate?: Date,
+): Promise<void> {
+  // Loop through each URL and fetch CrUX data
+  for (let i = 0; i < requestParam.urls.length; i++) {
+    for (const form_factor in requestParam.form_factor) {
+      try {
+        // Construct the API request
+        const requestBody = {
+          form_factor: form_factor,
+          url: requestParam.urls[i],
+          metrics: requestParam.metrics,
+        }
+        // Pulling data combined across desktop, tablet and phone
+        if (form_factor == 'ALL') {
+          requestBody.form_factor = ''
+        }
+
+        // Construct headers and plug in API key
+        const requestConfig: AxiosRequestConfig = {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          params: {
+            key: requestParam.api_key,
+          },
+        }
+
+        // Make the API request
+        const response = await axios.post(requestParam.api_url, requestBody, requestConfig)
+        const cruxApiResponse: CrUXApiResponse = response.data
+        let csvRecords = generateCsvRecord(cruxApiResponse)
+        let lastDate = new Date()
+        if (startDate) {
+          const firstDate = getClosetSundayInPast(startDate)
+          if (endDate === undefined) {
+            // When last date is not set, set it to current date
+            lastDate = getClosetSundayInPast(new Date())
+          } else {
+            // Otherwise get the closet Sunday of the end date
+            lastDate = getClosetSundayInPast(endDate)
+          }
+          csvRecords = filterRecordsByDateRange(csvRecords, firstDate, lastDate)
+        }
+
+        // Write the data to the CSV file
+        await csvWriterInstance.writeRecords(csvRecords)
+        console.log(`Data fetched and written to CSV for URL: ${requestParam.urls[i]}`)
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.log(`Error fetching data for URL: ${requestParam.urls[i]} - ${error.message}`)
+        }
+      }
+      // Delay for the rate limit before fetching data for the next URL
+      await new Promise(resolve => setTimeout(resolve, 60000 / requestParam.rate_limit)) // 60000 ms = 1 minute
+    }
+  }
 }
