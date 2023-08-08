@@ -49,12 +49,12 @@ const SAMPLE_URLS: string[] = await readCsv(INPUT_CSV_FILE_PATH)
 
 // Set the CrUX metrics you want to retrieve
 const CRUX_METRICS: string[] = [
-  // 'largest_contentful_paint',
-  // 'first_input_delay',
-  // 'cumulative_layout_shift',
-  // 'first_contentful_paint',
+  'largest_contentful_paint',
+  'first_input_delay',
+  'cumulative_layout_shift',
+  'first_contentful_paint',
   'interaction_to_next_paint',
-  // 'experimental_time_to_first_byte',
+  'experimental_time_to_first_byte',
 ]
 
 // Set the headers for the CSV file
