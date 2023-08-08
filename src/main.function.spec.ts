@@ -6,8 +6,9 @@ import {
   shortName,
   formatDate,
   getClosetSundayInPast,
+  filterRecordsByDateRange,
 } from './main.function'
-import { CrUXApiResponse } from './main.types'
+import { CrUXApiResponse, CrUXDataItemFrame } from './main.types'
 
 const response: CrUXApiResponse = {
   record: {
@@ -194,5 +195,83 @@ describe('getClosetMondayInPast', () => {
 
     // Assert that the result matches the expected date
     expect(result).toEqual(expectedDate)
+  })
+})
+
+describe('filterRecordsByDateRange', () => {
+  test('should return the correct filtered crux data set', () => {
+    const lowThreshold = new Date('2023-04-30T00:00:00-04:00')
+    const highThreshold = new Date('2023-05-07T00:00:00-04:00')
+    const dataset: CrUXDataItemFrame[] = [
+      {
+        first_date: '2023-04-30',
+        last_date: '2023-05-24',
+        p75: 32,
+        good: 0.82470703125,
+        needs_improvement: 0.090240478515625,
+        poor: 0.085052490234375,
+        url: 'https://developer.chrome.com/docs/',
+        metric_short_name: 'FID',
+        form_factor: 'PHONE',
+        high_threshold: 300,
+        low_threshold: 100,
+      },
+      {
+        first_date: '2023-05-07',
+        last_date: '2023-06-14',
+        p75: 32,
+        good: 0.82470703125,
+        needs_improvement: 0.090240478515625,
+        poor: 0.085052490234375,
+        url: 'https://developer.chrome.com/docs/',
+        metric_short_name: 'FID',
+        form_factor: 'PHONE',
+        high_threshold: 300,
+        low_threshold: 100,
+      },
+      {
+        first_date: '2023-06-03',
+        last_date: '2023-07-14',
+        p75: 32,
+        good: 0.82470703125,
+        needs_improvement: 0.090240478515625,
+        poor: 0.085052490234375,
+        url: 'https://developer.chrome.com/docs/',
+        metric_short_name: 'FID',
+        form_factor: 'PHONE',
+        high_threshold: 300,
+        low_threshold: 100,
+      },
+    ]
+    const expectedResult = [
+      {
+        first_date: '2023-04-30',
+        last_date: '2023-05-24',
+        p75: 32,
+        good: 0.82470703125,
+        needs_improvement: 0.090240478515625,
+        poor: 0.085052490234375,
+        url: 'https://developer.chrome.com/docs/',
+        metric_short_name: 'FID',
+        form_factor: 'PHONE',
+        high_threshold: 300,
+        low_threshold: 100,
+      },
+      {
+        first_date: '2023-05-07',
+        last_date: '2023-06-14',
+        p75: 32,
+        good: 0.82470703125,
+        needs_improvement: 0.090240478515625,
+        poor: 0.085052490234375,
+        url: 'https://developer.chrome.com/docs/',
+        metric_short_name: 'FID',
+        form_factor: 'PHONE',
+        high_threshold: 300,
+        low_threshold: 100,
+      },
+    ]
+    const result = filterRecordsByDateRange(dataset, lowThreshold, highThreshold)
+    expect(result).toEqual(expectedResult)
   })
 })
