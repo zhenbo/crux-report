@@ -53,7 +53,7 @@ const CRUX_METRICS: string[] = [
   'first_input_delay',
   'cumulative_layout_shift',
   'first_contentful_paint',
-  'experimental_interaction_to_next_paint',
+  'interaction_to_next_paint',
   'experimental_time_to_first_byte',
 ]
 
